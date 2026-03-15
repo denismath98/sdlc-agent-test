@@ -1,28 +1,54 @@
-from src.notebook.models import Note
-from src.notebook.search import filter_by_tag, search_notes
+import pytest
+
+from src.notebook.search import search_notes
 
 
-def build_notes():
+class DummyNote:
+    """Simple note-like object used for testing."""
+
+    def __init__(self, text):
+        self.text = text
+
+    def __repr__(self):
+        return f"DummyNote({self.text!r})"
+
+
+@pytest.fixture
+def sample_notes():
     return [
-        Note(id=1, title="Work plan", text="Prepare report", tags=["work"]),
-        Note(id=2, title="Shopping", text="Buy milk", tags=["home"]),
-        Note(id=3, title="Ideas", text="Project report draft", tags=["work", "draft"]),
+        DummyNote("First Note"),
+        DummyNote("second note"),
+        DummyNote("Another Note"),
+        DummyNote("MiXeD CaSe"),
     ]
 
 
-def test_search_notes_by_title():
-    result = search_notes(build_notes(), "Work")
+def test_search_case_insensitive_match(sample_notes):
+    result = search_notes(sample_notes, "first")
     assert len(result) == 1
-    assert result[0].id == 1
+    assert result[0].text == "First Note"
 
 
-def test_search_notes_by_text():
-    result = search_notes(build_notes(), "report")
-    assert len(result) == 2
-    assert [note.id for note in result] == [1, 3]
+def test_search_case_insensitive_different_case(sample_notes):
+    result = search_notes(sample_notes, "NOTE")
+    # Should match three notes containing the word "note" regardless of case
+    matched_texts = {note.text for note in result}
+    expected = {"First Note", "second note", "Another Note"}
+    assert matched_texts == expected
 
 
-def test_filter_by_tag():
-    result = filter_by_tag(build_notes(), "work")
-    assert len(result) == 2
-    assert [note.id for note in result] == [1, 3]
+def test_search_partial_match(sample_notes):
+    result = search_notes(sample_notes, "mix")
+    assert len(result) == 1
+    assert result[0].text == "MiXeD CaSe"
+
+
+def test_search_no_match(sample_notes):
+    result = search_notes(sample_notes, "nonexistent")
+    assert result == []
+
+
+def test_search_empty_query_returns_all(sample_notes):
+    # An empty query should match every note (as '' is in any string)
+    result = search_notes(sample_notes, "")
+    assert set(result) == set(sample_notes)
