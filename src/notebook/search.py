@@ -1,27 +1,16 @@
-from typing import List
-from .models import Note
+from typing import List, Any
 
 
-def _get_searchable_text(note: Note) -> str:
-    parts: List[str] = []
-    if hasattr(note, "title") and isinstance(note.title, str):
-        parts.append(note.title)
-    if hasattr(note, "text") and isinstance(note.text, str):
-        parts.append(note.text)
-    return " ".join(parts).lower() if parts else str(note).lower()
-
-
-def search_notes(notes: List[Note], query: str) -> List[Note]:
+def search_notes(notes: List[Any], query: str) -> List[Any]:
     """
-    Return a list of notes where the query appears in the title or text,
-    case‑insensitively.
+    Search for notes containing the query string, case‑insensitively.
+    The function looks for the query in both the title and content of each note.
     """
-    lowered_query = query.lower()
-    return [note for note in notes if lowered_query in _get_searchable_text(note)]
-
-
-def filter_by_tag(notes: List[Note], tag: str) -> List[Note]:
-    """
-    Return a list of notes that contain the given tag.
-    """
-    return [note for note in notes if hasattr(note, "tags") and tag in note.tags]
+    query_lower = query.lower()
+    result = []
+    for note in notes:
+        title = getattr(note, "title", "")
+        content = getattr(note, "content", "")
+        if query_lower in str(title).lower() or query_lower in str(content).lower():
+            result.append(note)
+    return result

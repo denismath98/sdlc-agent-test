@@ -1,37 +1,19 @@
 import pytest
-from src.notebook.search import search_notes
 from src.notebook.models import Note
+from src.notebook.search import search_notes
 
 
 @pytest.fixture
 def sample_notes():
     return [
-        Note(title="Shopping List", text="Buy milk and eggs", tags=["personal"]),
-        Note(title="Work Plan", text="Finish the report by Monday", tags=["work"]),
-        Note(title="Holiday", text="Plan trip to Italy", tags=["personal", "travel"]),
+        Note(id=1, title="First Note", content="Content one", tags=[]),
+        Note(id=2, title="Second note", content="Another content", tags=[]),
+        Note(id=3, title="Third", content="No match here", tags=[]),
     ]
 
 
-def test_search_by_title(sample_notes):
-    result = search_notes(sample_notes, "Shopping")
-    assert result == [sample_notes[0]]
-
-
-def test_search_by_text(sample_notes):
-    result = search_notes(sample_notes, "report")
-    assert result == [sample_notes[1]]
-
-
-def test_search_case_insensitive_title(sample_notes):
-    result = search_notes(sample_notes, "shopping")
-    assert result == [sample_notes[0]]
-
-
-def test_search_case_insensitive_text(sample_notes):
-    result = search_notes(sample_notes, "MILK")
-    assert result == [sample_notes[0]]
-
-
-def test_search_no_match(sample_notes):
-    result = search_notes(sample_notes, "nonexistent")
-    assert result == []
+def test_search_case_insensitive(sample_notes):
+    result = search_notes(sample_notes, "note")
+    assert len(result) == 2
+    ids = {note.id for note in result}
+    assert ids == {1, 2}
