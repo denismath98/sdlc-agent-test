@@ -3,9 +3,10 @@ from src.notebook.models import Note
 
 def search_notes(notes: list[Note], query: str) -> list[Note]:
     result: list[Note] = []
+    query_lower = query.lower()
 
     for note in notes:
-        if query in note.title or query in note.text:
+        if query_lower in note.title.lower() or query_lower in note.text.lower():
             result.append(note)
 
     return result
