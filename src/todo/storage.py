@@ -1,28 +1,30 @@
 import json
+import os
 from pathlib import Path
 from typing import List
 
 from .models import Task
 
-# Default location of the tasks JSON file.
-TASKS_FILE = Path.cwd() / "tasks.json"
+# Configurable path for the tasks JSON file
+TASKS_FILE = Path(os.getenv("TODO_TASKS_FILE", Path.cwd() / "tasks.json"))
 
 
 def _load_tasks() -> List[Task]:
     if not TASKS_FILE.exists():
         return []
     try:
-        data = json.loads(TASKS_FILE.read_text(encoding="utf-8"))
+        with TASKS_FILE.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        return [Task(**item) for item in data]
     except json.JSONDecodeError:
+        # Corrupted file – start fresh
         return []
-    return [Task(**item) for item in data]
 
 
 def _save_tasks(tasks: List[Task]) -> None:
-    data = [task.__dict__ for task in tasks]
-    TASKS_FILE.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    TASKS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with TASKS_FILE.open("w", encoding="utf-8") as f:
+        json.dump([task.__dict__ for task in tasks], f, ensure_ascii=False, indent=2)
 
 
 def add_task(text: str) -> Task:

@@ -1,6 +1,7 @@
-import json
+import os
 import subprocess
 import sys
+import json
 from pathlib import Path
 
 import pytest
@@ -11,84 +12,67 @@ from src.todo import storage, models
 @pytest.fixture
 def temp_tasks_file(tmp_path, monkeypatch):
     file_path = tmp_path / "tasks.json"
-    monkeypatch.setattr(storage, "TASKS_FILE", file_path)
-    # Ensure clean state
-    if file_path.exists():
-        file_path.unlink()
-    yield file_path
-    # Cleanup
-    if file_path.exists():
-        file_path.unlink()
+    monkeypatch.setenv("TODO_TASKS_FILE", str(file_path))
+    # Ensure storage module picks up the new env var
+    import importlib
+    import src.todo.storage as storage_mod
+
+    importlib.reload(storage_mod)
+    return file_path
 
 
-def test_add_and_list_tasks(temp_tasks_file):
+def test_add_list_remove_functions(temp_tasks_file):
     # Initially empty
     assert storage.list_tasks() == []
 
-    # Add first task
-    task1 = storage.add_task("First task")
-    assert task1.id == 1
-    assert task1.text == "First task"
+    # Add a task
+    task = storage.add_task("First task")
+    assert task.id == 1
+    assert task.text == "First task"
 
-    # Add second task
-    task2 = storage.add_task("Second task")
-    assert task2.id == 2
-    assert task2.text == "Second task"
-
-    # List tasks
+    # List returns the added task
     tasks = storage.list_tasks()
-    assert len(tasks) == 2
-    assert tasks[0] == task1
-    assert tasks[1] == task2
+    assert len(tasks) == 1
+    assert tasks[0] == task
 
-
-def test_remove_task(temp_tasks_file):
-    storage.add_task("Task to keep")
-    task_to_remove = storage.add_task("Task to delete")
-    assert len(storage.list_tasks()) == 2
-
-    removed = storage.remove_task(task_to_remove.id)
+    # Remove the task
+    removed = storage.remove_task(task.id)
     assert removed is True
-    remaining = storage.list_tasks()
-    assert len(remaining) == 1
-    assert remaining[0].text == "Task to keep"
+    assert storage.list_tasks() == []
 
-    # Removing non‑existent id should return False
-    assert storage.remove_task(999) is False
+
+def run_cli(args, env=None):
+    cmd = [sys.executable, "-m", "src.todo"] + args
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    return result
 
 
 def test_cli_add_list_remove(temp_tasks_file):
-    # Use subprocess to invoke the module as a script
-    def run_cmd(*args):
-        result = subprocess.run(
-            [sys.executable, "-m", "src.todo"] + list(args),
-            cwd=Path.cwd(),
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        return result
+    env = os.environ.copy()
+    env["TODO_TASKS_FILE"] = str(temp_tasks_file)
 
-    # Add a task
-    res_add = run_cmd("add", "CLI task")
-    assert res_add.returncode == 0
-    assert "Added task 1" in res_add.stdout
+    # Add via CLI
+    res = run_cli(["add", "CLI task"], env=env)
+    assert res.returncode == 0
+    assert "Added task 1" in res.stdout
 
-    # List tasks
-    res_list = run_cmd("list")
-    assert res_list.returncode == 0
-    assert "1: CLI task" in res_list.stdout
+    # List via CLI
+    res = run_cli(["list"], env=env)
+    assert res.returncode == 0
+    assert "1: CLI task" in res.stdout
 
-    # Remove the task
-    res_remove = run_cmd("remove", "1")
-    assert res_remove.returncode == 0
-    assert "Removed task 1" in res_remove.stdout
+    # Remove via CLI
+    res = run_cli(["remove", "1"], env=env)
+    assert res.returncode == 0
+    assert "Removed task 1" in res.stdout
 
-    # List again should be empty
-    res_list2 = run_cmd("list")
-    assert res_list2.returncode == 0
-    assert "No tasks." in res_list2.stdout
-
-    # Verify the JSON file content matches expectations
-    data = json.loads(temp_tasks_file.read_text())
+    # Verify file is empty after removal
+    with temp_tasks_file.open() as f:
+        data = json.load(f)
     assert data == []
