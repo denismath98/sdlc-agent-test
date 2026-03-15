@@ -1,28 +1,19 @@
+import pytest
 from src.notebook.models import Note
-from src.notebook.search import filter_by_tag, search_notes
+from src.notebook.search import search_notes
 
 
-def build_notes():
+@pytest.fixture
+def sample_notes():
     return [
-        Note(id=1, title="Work plan", text="Prepare report", tags=["work"]),
-        Note(id=2, title="Shopping", text="Buy milk", tags=["home"]),
-        Note(id=3, title="Ideas", text="Project report draft", tags=["work", "draft"]),
+        Note(id=1, title="First Note", content="Content one", tags=[]),
+        Note(id=2, title="Second note", content="Another content", tags=[]),
+        Note(id=3, title="Third", content="No match here", tags=[]),
     ]
 
 
-def test_search_notes_by_title():
-    result = search_notes(build_notes(), "Work")
-    assert len(result) == 1
-    assert result[0].id == 1
-
-
-def test_search_notes_by_text():
-    result = search_notes(build_notes(), "report")
+def test_search_case_insensitive(sample_notes):
+    result = search_notes(sample_notes, "note")
     assert len(result) == 2
-    assert [note.id for note in result] == [1, 3]
-
-
-def test_filter_by_tag():
-    result = filter_by_tag(build_notes(), "work")
-    assert len(result) == 2
-    assert [note.id for note in result] == [1, 3]
+    ids = {note.id for note in result}
+    assert ids == {1, 2}

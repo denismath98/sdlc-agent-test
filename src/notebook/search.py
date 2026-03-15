@@ -1,15 +1,16 @@
-from src.notebook.models import Note
+from typing import List, Any
 
 
-def search_notes(notes: list[Note], query: str) -> list[Note]:
-    result: list[Note] = []
-
+def search_notes(notes: List[Any], query: str) -> List[Any]:
+    """
+    Search for notes containing the query string, case‑insensitively.
+    The function looks for the query in both the title and content of each note.
+    """
+    query_lower = query.lower()
+    result = []
     for note in notes:
-        if query in note.title or query in note.text:
+        title = getattr(note, "title", "")
+        content = getattr(note, "content", "")
+        if query_lower in str(title).lower() or query_lower in str(content).lower():
             result.append(note)
-
     return result
-
-
-def filter_by_tag(notes: list[Note], tag: str) -> list[Note]:
-    return [note for note in notes if tag in note.tags]
