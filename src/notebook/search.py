@@ -1,18 +1,28 @@
-def search_notes(notes, query):
+from typing import List
+
+from .note import Note
+
+
+def search_notes(notes: List[Note], query: str) -> List[Note]:
     """
-    Search for notes containing the query string, case-insensitively.
-
-    Parameters
-    ----------
-    notes : list of str
-        List of note strings to search within.
-    query : str
-        Query string to search for.
-
-    Returns
-    -------
-    list of str
-        Subset of `notes` that contain `query` (case‑insensitive), preserving original case.
+    Return a list of notes where the query appears in the title or text,
+    case‑insensitively.
     """
     query_lower = query.lower()
-    return [note for note in notes if query_lower in note.lower()]
+    matched: List[Note] = []
+    for note in notes:
+        if query_lower in note.title.lower() or query_lower in note.text.lower():
+            matched.append(note)
+    return matched
+
+
+def filter_by_tag(notes: List[Note], tag: str) -> List[Note]:
+    """
+    Return a list of notes that contain the given tag.
+    """
+    tag_lower = tag.lower()
+    filtered: List[Note] = []
+    for note in notes:
+        if any(t.lower() == tag_lower for t in note.tags):
+            filtered.append(note)
+    return filtered
