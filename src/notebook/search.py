@@ -2,6 +2,13 @@ from src.notebook.models import Note
 
 
 def search_notes(notes: list[Note], query: str) -> list[Note]:
+    """
+    Search notes by title or text in a case‑insensitive manner.
+
+    The function lower‑cases both the query and the note fields before
+    performing the containment check, ensuring that matches are found
+    regardless of the original letter case.
+    """
     result: list[Note] = []
     query_lower = query.lower()
 
