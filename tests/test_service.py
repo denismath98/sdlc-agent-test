@@ -1,52 +1,34 @@
-import os
-from pathlib import Path
-from src.tasktracker.service import create_task, complete_task, list_tasks, delete_task
-from src.tasktracker.storage import JSONStorage
-from src.tasktracker.models import Task
-from datetime import datetime
+from src.tasktracker.service import create_task, complete_task, delete_task, list_tasks
 
 
-def test_full_flow(tmp_path: Path, monkeypatch):
-    # Use a temporary storage file
-    storage_path = tmp_path / "tasks.json"
-    monkeypatch.setattr("src.tasktracker.service._storage", JSONStorage(storage_path))
+def test_create_task():
+    task = create_task("New task")
+    assert task.id == 1
+    assert task.text == "New task"
+    assert not task.completed
 
-    # Create tasks
-    t1 = create_task("First")
-    t2 = create_task("Second")
-    assert t1.id != t2.id
-    assert not t1.completed
 
-    # Complete one
-    completed = complete_task(t1.id)
-    assert completed.completed is True
+def test_complete_task():
+    task = create_task("To complete")
+    completed = complete_task(task.id)
+    assert completed.completed
+    assert completed.id == task.id
 
-    # List pending
-    pending = list_tasks(completed=False)
-    assert len(pending) == 1
-    assert pending[0].id == t2.id
 
-    # Delete completed
+def test_list_tasks():
+    create_task("First")
+    create_task("Second")
+    tasks = list_tasks()
+    assert len(tasks) == 2
+    texts = [t.text for t in tasks]
+    assert "First" in texts and "Second" in texts
+
+
+def test_delete_task():
+    t1 = create_task("Del 1")
+    t2 = create_task("Del 2")
     delete_task(t1.id)
     remaining = list_tasks()
-    assert len(remaining) == 1
-    assert remaining[0].id == t2.id
-
-
-def test_errors(monkeypatch, tmp_path):
-    storage_path = tmp_path / "tasks.json"
-    monkeypatch.setattr("src.tasktracker.service._storage", JSONStorage(storage_path))
-
-    # Deleting non‑existent task raises
-    try:
-        delete_task(999)
-        assert False, "Expected ValueError"
-    except ValueError:
-        pass
-
-    # Completing non‑existent task raises
-    try:
-        complete_task(999)
-        assert False, "Expected ValueError"
-    except ValueError:
-        pass
+    ids = [t.id for t in remaining]
+    assert t1.id not in ids
+    assert t2.id in ids

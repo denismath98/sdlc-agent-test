@@ -1,47 +1,34 @@
-import sys
+import json
+from pathlib import Path
+
+import pytest
 from click.testing import CliRunner
-from src.tasktracker import cli
+
+from src.tasktracker.cli import cli
 
 
-def test_cli_create_and_list(monkeypatch, tmp_path):
-    # Redirect storage to temporary file
-    from src.tasktracker.service import _storage as original_storage
-    from src.tasktracker.storage import JSONStorage
+@pytest.fixture
+def runner():
+    return CliRunner()
 
-    temp_storage = JSONStorage(tmp_path / "tasks.json")
-    monkeypatch.setattr("src.tasktracker.service._storage", temp_storage)
 
-    runner = CliRunner()
-    result = runner.invoke(cli.main, ["create", "Demo task"])
+def test_cli_create_and_complete_and_delete(runner):
+    # Create a task
+    result = runner.invoke(cli, ["create", "Demo task"])
     assert result.exit_code == 0
+    # Expect output like "[1] Demo task"
+    assert "[1]" in result.output
     assert "Demo task" in result.output
+    # Parse the id
+    task_id = int(result.output.split("[")[1].split("]")[0])
 
-    result = runner.invoke(cli.main, ["list"])
+    # Complete the task
+    result = runner.invoke(cli, ["complete", str(task_id)])
     assert result.exit_code == 0
-    assert "Demo task" in result.output
+    assert "✅" in result.output
+    assert f"[{task_id}]" in result.output
 
-
-def test_cli_complete_and_delete(monkeypatch, tmp_path):
-    from src.tasktracker.service import _storage as original_storage
-    from src.tasktracker.storage import JSONStorage
-
-    temp_storage = JSONStorage(tmp_path / "tasks.json")
-    monkeypatch.setattr("src.tasktracker.service._storage", temp_storage)
-
-    runner = CliRunner()
-    # create
-    create_res = runner.invoke(cli.main, ["create", "Task to complete"])
-    assert create_res.exit_code == 0
-    # extract id from output
-    line = create_res.output.splitlines()[0]
-    task_id = int(line.split("]")[0].strip("["))
-
-    # complete
-    comp_res = runner.invoke(cli.main, ["complete", str(task_id)])
-    assert comp_res.exit_code == 0
-    assert "✅" in comp_res.output
-
-    # delete
-    del_res = runner.invoke(cli.main, ["delete", str(task_id)])
-    assert del_res.exit_code == 0
-    assert "deleted" in del_res.output.lower()
+    # List tasks and verify completed status
+    result = runner.invoke(cli, ["list"])
+    assert result.exit_code == 0
+    assert f"[
