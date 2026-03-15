@@ -1,42 +1,27 @@
-"""
-Search utilities for notebook notes.
-
-Provides a case‑insensitive search over a collection of note objects.
-"""
-
-from typing import Iterable, List, Any
+from typing import List
+from .models import Note
 
 
-def _get_note_text(note: Any) -> str:
+def _get_searchable_text(note: Note) -> str:
+    parts: List[str] = []
+    if hasattr(note, "title") and isinstance(note.title, str):
+        parts.append(note.title)
+    if hasattr(note, "text") and isinstance(note.text, str):
+        parts.append(note.text)
+    return " ".join(parts).lower() if parts else str(note).lower()
+
+
+def search_notes(notes: List[Note], query: str) -> List[Note]:
     """
-    Retrieve the textual representation of a note.
-
-    The function first tries to access a ``text`` attribute; if it does not exist,
-    it falls back to ``str(note)``.
+    Return a list of notes where the query appears in the title or text,
+    case‑insensitively.
     """
-    return getattr(note, "text", str(note))
+    lowered_query = query.lower()
+    return [note for note in notes if lowered_query in _get_searchable_text(note)]
 
 
-def search_notes(notes: Iterable[Any], query: str) -> List[Any]:
+def filter_by_tag(notes: List[Note], tag: str) -> List[Note]:
     """
-    Return a list of notes whose text contains the given query, case‑insensitively.
-
-    Parameters
-    ----------
-    notes : iterable
-        Collection of note objects.
-    query : str
-        Search string.
-
-    Returns
-    -------
-    list
-        Notes that match the query.
+    Return a list of notes that contain the given tag.
     """
-    query_lower = query.lower()
-    matched: List[Any] = []
-    for note in notes:
-        note_text = _get_note_text(note)
-        if query_lower in note_text.lower():
-            matched.append(note)
-    return matched
+    return [note for note in notes if hasattr(note, "tags") and tag in note.tags]
