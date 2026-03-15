@@ -1,22 +1,26 @@
 def search_notes(notes, query):
     """
-    Search for notes containing the given query string, case‑insensitively.
+    Return a list of notes that contain the query string, case‑insensitively.
 
     Parameters
     ----------
     notes : iterable of str
-        Collection of note texts to search through.
+        The collection of note strings to search through.
     query : str
-        Substring to look for within each note.
+        The substring to look for.
 
     Returns
     -------
     list of str
-        List of notes that contain the query, preserving the original order.
+        Notes that contain the query, preserving the original note order.
     """
+    if not isinstance(query, str):
+        raise TypeError("query must be a string")
     lowered_query = query.lower()
-    matching_notes = []
+    result = []
     for note in notes:
+        if not isinstance(note, str):
+            continue
         if lowered_query in note.lower():
-            matching_notes.append(note)
-    return matching_notes
+            result.append(note)
+    return result
