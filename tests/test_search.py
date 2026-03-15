@@ -1,28 +1,25 @@
-from src.notebook.models import Note
-from src.notebook.search import filter_by_tag, search_notes
+import pytest
+from src.notebook.search import search_notes
 
 
-def build_notes():
-    return [
-        Note(id=1, title="Work plan", text="Prepare report", tags=["work"]),
-        Note(id=2, title="Shopping", text="Buy milk", tags=["home"]),
-        Note(id=3, title="Ideas", text="Project report draft", tags=["work", "draft"]),
-    ]
+def test_search_basic():
+    notes = ["Note one", "Another note", "Something else"]
+    assert search_notes(notes, "Note") == ["Note one", "Another note"]
 
 
-def test_search_notes_by_title():
-    result = search_notes(build_notes(), "Work")
-    assert len(result) == 1
-    assert result[0].id == 1
+def test_search_empty_query():
+    notes = ["Alpha", "Beta", "Gamma"]
+    assert search_notes(notes, "") == ["Alpha", "Beta", "Gamma"]
 
 
-def test_search_notes_by_text():
-    result = search_notes(build_notes(), "report")
-    assert len(result) == 2
-    assert [note.id for note in result] == [1, 3]
+def test_search_no_match():
+    notes = ["Alpha", "Beta", "Gamma"]
+    assert search_notes(notes, "Delta") == []
 
 
-def test_filter_by_tag():
-    result = filter_by_tag(build_notes(), "work")
-    assert len(result) == 2
-    assert [note.id for note in result] == [1, 3]
+def test_search_case_insensitive():
+    notes = ["First Note", "second note", "Third"]
+    expected = ["First Note", "second note"]
+    assert search_notes(notes, "note") == expected
+    assert search_notes(notes, "NOTE") == expected
+    assert search_notes(notes, "NoTe") == expected
