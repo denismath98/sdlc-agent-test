@@ -1,39 +1,39 @@
-# src/todo/storage.py
 import json
+import os
 from pathlib import Path
 from typing import List
 
 from .models import Task
 
-# Path to the JSON file storing tasks. Can be monkey‑patched in tests.
-TASKS_FILE: Path = Path(__file__).with_name("tasks.json")
+# Environment variable to override tasks file location
+TASKS_FILE_ENV = "TODO_TASKS_FILE"
 
 
-def _ensure_file_exists() -> None:
-    if not TASKS_FILE.exists():
-        TASKS_FILE.write_text("[]", encoding="utf-8")
+def _get_tasks_file() -> Path:
+    env_path = os.getenv(TASKS_FILE_ENV)
+    if env_path:
+        return Path(env_path)
+    # Default location: next to this file in the src/todo directory
+    return Path(__file__).with_name("tasks.json")
 
 
 def load_tasks() -> List[Task]:
-    """Load tasks from the JSON file."""
-    _ensure_file_exists()
-    try:
-        data = json.loads(TASKS_FILE.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        data = []
+    tasks_path = _get_tasks_file()
+    if not tasks_path.exists():
+        return []
+    with tasks_path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
     return [Task(**item) for item in data]
 
 
 def save_tasks(tasks: List[Task]) -> None:
-    """Save the list of tasks to the JSON file."""
-    data = [task.__dict__ for task in tasks]
-    TASKS_FILE.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    tasks_path = _get_tasks_file()
+    tasks_path.parent.mkdir(parents=True, exist_ok=True)
+    with tasks_path.open("w", encoding="utf-8") as f:
+        json.dump([task.__dict__ for task in tasks], f, ensure_ascii=False, indent=2)
 
 
 def add_task(text: str) -> Task:
-    """Add a new task and return it."""
     tasks = load_tasks()
     next_id = max((task.id for task in tasks), default=0) + 1
     new_task = Task(id=next_id, text=text)
@@ -43,14 +43,12 @@ def add_task(text: str) -> Task:
 
 
 def list_tasks() -> List[Task]:
-    """Return the list of all tasks."""
     return load_tasks()
 
 
 def remove_task(task_id: int) -> None:
-    """Remove a task by its ID. Raises ValueError if not found."""
     tasks = load_tasks()
     filtered = [task for task in tasks if task.id != task_id]
     if len(filtered) == len(tasks):
-        raise ValueError(f"Task with id {task_id} not found")
+        raise ValueError(f"Task with id {task_id} does not exist")
     save_tasks(filtered)

@@ -1,16 +1,15 @@
-# src/todo/cli.py
 import argparse
 import sys
 
 from .storage import add_task, list_tasks, remove_task
 
 
-def _cmd_add(args: argparse.Namespace) -> None:
+def _cmd_add(args):
     task = add_task(args.text)
-    print(f"Added task {task.id}: {task.text}")
+    print(f"Added task {task.id}")
 
 
-def _cmd_list(_: argparse.Namespace) -> None:
+def _cmd_list(args):
     tasks = list_tasks()
     if not tasks:
         print("No tasks.")
@@ -19,7 +18,7 @@ def _cmd_list(_: argparse.Namespace) -> None:
         print(f"{task.id}: {task.text}")
 
 
-def _cmd_remove(args: argparse.Namespace) -> None:
+def _cmd_remove(args):
     try:
         remove_task(args.id)
         print(f"Removed task {args.id}")
@@ -28,8 +27,8 @@ def _cmd_remove(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
-def main(argv=None) -> None:
-    parser = argparse.ArgumentParser(prog="todo", description="Simple todo CLI")
+def main(argv=None):
+    parser = argparse.ArgumentParser(prog="todo")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     parser_add = subparsers.add_parser("add", help="Add a new task")
@@ -39,9 +38,13 @@ def main(argv=None) -> None:
     parser_list = subparsers.add_parser("list", help="List all tasks")
     parser_list.set_defaults(func=_cmd_list)
 
-    parser_remove = subparsers.add_parser("remove", help="Remove a task by ID")
-    parser_remove.add_argument("id", type=int, help="ID of the task to remove")
+    parser_remove = subparsers.add_parser("remove", help="Remove a task by id")
+    parser_remove.add_argument("id", type=int, help="Task ID")
     parser_remove.set_defaults(func=_cmd_remove)
 
     args = parser.parse_args(argv)
     args.func(args)
+
+
+if __name__ == "__main__":
+    main()

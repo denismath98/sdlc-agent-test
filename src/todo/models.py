@@ -1,4 +1,3 @@
-# src/todo/models.py
 from dataclasses import dataclass
 
 
