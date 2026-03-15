@@ -6,22 +6,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "todo-cli"
 version = "0.1.0"
-description = "A simple command‑line todo application"
-authors = [{name = "Your Name", email = "you@example.com"}]
+description = "Simple todo CLI with JSON storage"
+authors = [{name = "Author", email = "author@example.com"}]
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
-]
-
-[project.urls]
-Homepage = "https://example.com"
+dependencies = []
 
 [project.scripts]
 todo = "src.todo.cli:main"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["todo*"]
+```
