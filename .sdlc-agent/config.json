@@ -1,7 +1,0 @@
-{
-  "default_branch": "benchmark-repo",
-  "max_iterations": 3,
-  "review": {
-    "require_ci_success": true
-  }
-}
