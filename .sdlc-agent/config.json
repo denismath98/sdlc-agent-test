@@ -1,7 +1,12 @@
 {
   "default_branch": "benchmark-repo",
   "max_iterations": 3,
+
   "review": {
-    "require_ci_success": true
+    "require_ci_success": true,
+
+    "diff_max_chars": 8000,
+    "issue_max_chars": 3000,
+    "llm_output_max_chars": 4000
   }
 }
