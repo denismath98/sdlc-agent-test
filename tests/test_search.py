@@ -1,38 +1,18 @@
-import unittest
+import pytest
+from src.notebook.search import search_notes
 
 
-# Simple mock note class for testing purposes
-class MockNote:
-    def __init__(self, text):
-        self.text = text
+def test_search_basic():
+    notes = ["Buy milk", "Read book", "Call Alice"]
+    assert search_notes(notes, "milk") == ["Buy milk"]
+    assert search_notes(notes, "book") == ["Read book"]
+    assert search_notes(notes, "call") == ["Call Alice"]
+    assert search_notes(notes, "xyz") == []
 
 
-class TestSearchNotes(unittest.TestCase):
-    def setUp(self):
-        self.notes = [
-            MockNote("First Note"),
-            MockNote("second note"),
-            MockNote("Another Note"),
-            MockNote("MiXeD CaSe Note"),
-        ]
-
-    def test_case_insensitive_match(self):
-        # Query in different case should match appropriate notes
-        result = search_notes(self.notes, "note")
-        self.assertEqual(len(result), 4)
-
-        result = search_notes(self.notes, "FIRST")
-        self.assertEqual(len(result), 1)
-        self.assertIs(result[0], self.notes[0])
-
-        result = search_notes(self.notes, "mixed case")
-        self.assertEqual(len(result), 1)
-        self.assertIs(result[0], self.notes[3])
-
-    def test_no_match(self):
-        result = search_notes(self.notes, "nonexistent")
-        self.assertEqual(len(result), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()
+def test_search_case_insensitive():
+    notes = ["First Note", "second note", "Another"]
+    assert search_notes(notes, "first") == ["First Note"]
+    assert search_notes(notes, "NOTE") == ["First Note", "second note"]
+    assert search_notes(notes, "AnOtHeR") == ["Another"]
+    assert search_notes(notes, "missing") == []
