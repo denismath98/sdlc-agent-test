@@ -16,12 +16,10 @@ class JSONStorage:
         try:
             raw = self.file_path.read_text(encoding="utf-8")
             data = json.loads(raw)
-            return [Task.from_dict(item) for item in data]
-        except json.JSONDecodeError:
-            return []
+        except (json.JSONDecodeError, FileNotFoundError):
+            data = []
+        return [Task.from_dict(item) for item in data]
 
     def save_tasks(self, tasks: List[Task]) -> None:
         data = [task.to_dict() for task in tasks]
-        self.file_path.write_text(
-            json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-        )
+        self.file_path.write_text(json.dumps(data, indent=2), encoding="utf-8")

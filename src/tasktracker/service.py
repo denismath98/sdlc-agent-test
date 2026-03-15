@@ -1,5 +1,5 @@
-from typing import List, Optional
-from pathlib import Path
+from datetime import datetime
+from typing import List
 from .models import Task
 from .storage import JSONStorage
 
@@ -7,22 +7,20 @@ _storage = JSONStorage()
 
 
 def _get_next_id(tasks: List[Task]) -> int:
-    if not tasks:
-        return 1
-    return max(task.id for task in tasks) + 1
+    return max((task.id for task in tasks), default=0) + 1
 
 
 def create_task(text: str) -> Task:
     tasks = _storage.load_tasks()
-    new_task = Task(
+    task = Task(
         id=_get_next_id(tasks),
         text=text,
         completed=False,
         created_at=datetime.now(),
     )
-    tasks.append(new_task)
+    tasks.append(task)
     _storage.save_tasks(tasks)
-    return new_task
+    return task
 
 
 def complete_task(task_id: int) -> Task:
@@ -35,11 +33,8 @@ def complete_task(task_id: int) -> Task:
     raise ValueError(f"Task with id {task_id} not found")
 
 
-def list_tasks(completed: Optional[bool] = None) -> List[Task]:
-    tasks = _storage.load_tasks()
-    if completed is None:
-        return tasks
-    return [task for task in tasks if task.completed == completed]
+def list_tasks() -> List[Task]:
+    return _storage.load_tasks()
 
 
 def delete_task(task_id: int) -> None:
