@@ -1,42 +1,32 @@
 import pytest
-
-from src.notebook.note import Note
+from src.notebook.models import Note
 from src.notebook.search import search_notes, filter_by_tag
-
-
-def test_search_case_sensitive():
-    notes = [
-        Note(title="Shopping List", text="Buy milk and eggs", tags=[]),
-        Note(title="Work", text="Finish report", tags=[]),
-    ]
-    result = search_notes(notes, "Shopping")
-    assert len(result) == 1
-    assert result[0].title == "Shopping List"
 
 
 def test_search_case_insensitive():
     notes = [
-        Note(title="Hello World", text="This is a Test", tags=[]),
-        Note(title="Another Note", text="nothing here", tags=[]),
+        Note(content="Hello World", tags=[]),
+        Note(content="Another note", tags=[]),
+        Note(content="HELLO again", tags=[]),
     ]
-    # Query in different case should still match title
-    result_title = search_notes(notes, "hello")
-    assert len(result_title) == 1
-    assert result_title[0].title == "Hello World"
-
-    # Query in different case should still match text
-    result_text = search_notes(notes, "TEST")
-    assert len(result_text) == 1
-    assert result_text[0].title == "Hello World"
+    result = search_notes(notes, "hello")
+    assert len(result) == 2
+    assert notes[0] in result
+    assert notes[2] in result
 
 
-def test_filter_by_tag():
+def test_search_no_match():
+    notes = [Note(content="Test", tags=[])]
+    result = search_notes(notes, "absent")
+    assert result == []
+
+
+def test_filter_by_tag_case_sensitive():
     notes = [
-        Note(title="Note 1", text="...", tags=["urgent", "home"]),
-        Note(title="Note 2", text="...", tags=["work"]),
-        Note(title="Note 3", text="...", tags=["Urgent"]),
+        Note(content="Note1", tags=["Tag"]),
+        Note(content="Note2", tags=["tag"]),
     ]
-    filtered = filter_by_tag(notes, "URGENT")
-    assert len(filtered) == 2
-    titles = {note.title for note in filtered}
-    assert titles == {"Note 1", "Note 3"}
+    result = filter_by_tag(notes, "Tag")
+    assert result == [notes[0]]
+    result2 = filter_by_tag(notes, "tag")
+    assert result2 == [notes[1]]

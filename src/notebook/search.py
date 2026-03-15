@@ -1,28 +1,21 @@
 from typing import List
-
-from .note import Note
+from .models import Note
 
 
 def search_notes(notes: List[Note], query: str) -> List[Note]:
-    """
-    Return a list of notes where the query appears in the title or text,
-    case‑insensitively.
-    """
-    query_lower = query.lower()
-    matched: List[Note] = []
+    """Return notes where the query appears in the note content, case‑insensitive."""
+    lowered_query = query.lower()
+    result: List[Note] = []
     for note in notes:
-        if query_lower in note.title.lower() or query_lower in note.text.lower():
-            matched.append(note)
-    return matched
+        if lowered_query in note.content.lower():
+            result.append(note)
+    return result
 
 
 def filter_by_tag(notes: List[Note], tag: str) -> List[Note]:
-    """
-    Return a list of notes that contain the given tag.
-    """
-    tag_lower = tag.lower()
-    filtered: List[Note] = []
+    """Return notes that contain the exact tag (case‑sensitive)."""
+    result: List[Note] = []
     for note in notes:
-        if any(t.lower() == tag_lower for t in note.tags):
-            filtered.append(note)
-    return filtered
+        if tag in note.tags:
+            result.append(note)
+    return result
