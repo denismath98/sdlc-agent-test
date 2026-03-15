@@ -26,3 +26,14 @@ def test_filter_by_tag():
     result = filter_by_tag(build_notes(), "work")
     assert len(result) == 2
     assert [note.id for note in result] == [1, 3]
+
+
+def test_search_notes_case_insensitive():
+    notes = build_notes()
+    result_title = search_notes(notes, "work")
+    assert len(result_title) == 1
+    assert result_title[0].id == 1
+
+    result_text = search_notes(notes, "REPORT")
+    assert len(result_text) == 2
+    assert [note.id for note in result_text] == [1, 3]
