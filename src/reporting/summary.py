@@ -13,3 +13,11 @@ def count_notes_by_tag(notes: list[Note]) -> dict[str, int]:
             result[tag] = result.get(tag, 0) + 1
 
     return result
+
+
+def count_notes_without_tags(notes: list[Note]) -> int:
+    count = 0
+    for note in notes:
+        if not note.tags:
+            count += 1
+    return count
