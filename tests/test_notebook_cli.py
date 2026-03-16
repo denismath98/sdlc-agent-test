@@ -13,6 +13,7 @@ def write_notes(path):
             "text": "Project report draft",
             "tags": ["work", "draft"],
         },
+        {"id": 4, "title": "Empty", "text": "No tags here", "tags": []},
     ]
     path.write_text(json.dumps(data), encoding="utf-8")
 
@@ -64,3 +65,26 @@ def test_notebook_cli_tag(tmp_path):
     lines = result.stdout.strip().splitlines()
     assert len(lines) == 1
     assert "[2] Shopping" in lines[0]
+
+
+def test_notebook_cli_without_tags(tmp_path):
+    path = tmp_path / "notes.json"
+    write_notes(path)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.notebook.cli",
+            "--file",
+            str(path),
+            "--without-tags",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 1
+    assert "[4] Empty" in lines[0]
