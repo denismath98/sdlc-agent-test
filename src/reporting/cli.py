@@ -1,12 +1,18 @@
 import argparse
 
 from src.notebook.storage import load_notes
-from src.reporting.summary import count_notes, count_notes_by_tag
+from src.notebook.cli import format_note_line
+from src.reporting.summary import count_notes, count_notes_by_tag, group_notes_by_tag
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Reporting CLI")
     parser.add_argument("--file", required=True, help="Path to notes json file")
+    parser.add_argument(
+        "--show-grouped",
+        action="store_true",
+        help="Show notes grouped by tags after the summary",
+    )
     args = parser.parse_args()
 
     notes = load_notes(args.file)
@@ -16,6 +22,15 @@ def main() -> None:
     tag_stats = count_notes_by_tag(notes)
     for tag in sorted(tag_stats):
         print(f"{tag}={tag_stats[tag]}")
+
+    if args.show_grouped:
+        groups = group_notes_by_tag(notes)
+
+        print()
+        for tag in sorted(groups):
+            print(f"[group:{tag}]")
+            for note in groups[tag]:
+                print(format_note_line(note))
 
 
 if __name__ == "__main__":
