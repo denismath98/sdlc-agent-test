@@ -16,7 +16,7 @@ def main() -> None:
 
     output = export_filtered_notes_as_text(notes, args.query, args.tag)
 
-    if output:
+    if output != "":
         # print adds a trailing newline which is acceptable for non‑empty output
         print(output)
 
