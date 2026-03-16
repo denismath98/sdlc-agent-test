@@ -64,3 +64,29 @@ def test_notebook_cli_tag(tmp_path):
     lines = result.stdout.strip().splitlines()
     assert len(lines) == 1
     assert "[2] Shopping" in lines[0]
+
+
+def test_notebook_cli_sort_title(tmp_path):
+    path = tmp_path / "notes.json"
+    write_notes(path)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.notebook.cli",
+            "--file",
+            str(path),
+            "--sort-title",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 3
+    # Expected order: Ideas, Shopping, Work plan
+    assert lines[0].startswith("[3] Ideas")
+    assert lines[1].startswith("[2] Shopping")
+    assert lines[2].startswith("[1] Work plan")
