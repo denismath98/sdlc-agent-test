@@ -27,10 +27,13 @@ def main() -> None:
         groups = group_notes_by_tag(notes)
 
         print()
-        for tag in sorted(groups):
+        sorted_tags = sorted(groups)
+        for idx, tag in enumerate(sorted_tags):
             print(f"[group:{tag}]")
             for note in groups[tag]:
                 print(format_note_line(note))
+            if idx != len(sorted_tags) - 1:
+                print()  # blank line between groups
 
 
 if __name__ == "__main__":
