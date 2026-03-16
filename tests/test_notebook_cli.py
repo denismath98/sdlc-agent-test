@@ -64,3 +64,27 @@ def test_notebook_cli_tag(tmp_path):
     lines = result.stdout.strip().splitlines()
     assert len(lines) == 1
     assert "[2] Shopping" in lines[0]
+
+
+def test_notebook_cli_exact_title(tmp_path):
+    path = tmp_path / "notes.json"
+    write_notes(path)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.notebook.cli",
+            "--file",
+            str(path),
+            "--exact-title",
+            "Ideas",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 1
+    assert "[3] Ideas" in lines[0]
