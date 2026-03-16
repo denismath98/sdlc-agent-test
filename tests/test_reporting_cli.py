@@ -36,3 +36,30 @@ def test_reporting_cli(tmp_path):
         "home=1",
         "work=2",
     ]
+
+
+def test_reporting_cli_sort_title(tmp_path):
+    path = tmp_path / "notes.json"
+    write_notes(path)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.reporting.cli",
+            "--file",
+            str(path),
+            "--sort-title",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    lines = result.stdout.strip().splitlines()
+    assert lines == [
+        "total=3",
+        "draft=1",
+        "home=1",
+        "work=2",
+    ]

@@ -9,11 +9,20 @@ def format_note_line(note) -> str:
     return f"[{note.id}] {note.title} :: {tags} :: {note.text}"
 
 
+def _sort_by_title(notes):
+    return sorted(notes, key=lambda n: n.title)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Notebook CLI")
     parser.add_argument("--file", required=True, help="Path to notes json file")
     parser.add_argument("--query", help="Search query")
     parser.add_argument("--tag", help="Filter by tag")
+    parser.add_argument(
+        "--sort-title",
+        action="store_true",
+        help="Sort notes by title in ascending order",
+    )
     args = parser.parse_args()
 
     notes = load_notes(args.file)
@@ -23,6 +32,9 @@ def main() -> None:
 
     if args.tag:
         notes = filter_by_tag(notes, args.tag)
+
+    if args.sort_title:
+        notes = _sort_by_title(notes)
 
     for note in notes:
         print(format_note_line(note))
