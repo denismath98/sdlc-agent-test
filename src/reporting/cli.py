@@ -1,7 +1,7 @@
 import argparse
 
 from src.notebook.storage import load_notes
-from src.reporting.summary import count_notes, count_notes_by_tag
+from src.reporting.summary import count_notes, count_notes_by_tag, count_without_tags
 
 
 def main() -> None:
@@ -16,6 +16,8 @@ def main() -> None:
     tag_stats = count_notes_by_tag(notes)
     for tag in sorted(tag_stats):
         print(f"{tag}={tag_stats[tag]}")
+
+    print(f"without_tags={count_without_tags(notes)}")
 
 
 if __name__ == "__main__":

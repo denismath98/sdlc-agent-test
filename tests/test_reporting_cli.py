@@ -8,6 +8,7 @@ def write_notes(path):
         {"id": 1, "title": "A", "text": "x", "tags": ["work"]},
         {"id": 2, "title": "B", "text": "y", "tags": ["home"]},
         {"id": 3, "title": "C", "text": "z", "tags": ["work", "draft"]},
+        {"id": 4, "title": "D", "text": "w", "tags": []},
     ]
     path.write_text(json.dumps(data), encoding="utf-8")
 
@@ -31,8 +32,9 @@ def test_reporting_cli(tmp_path):
 
     lines = result.stdout.strip().splitlines()
     assert lines == [
-        "total=3",
+        "total=4",
         "draft=1",
         "home=1",
         "work=2",
+        "without_tags=1",
     ]
