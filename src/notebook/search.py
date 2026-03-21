@@ -17,8 +17,4 @@ def filter_by_tag(notes: list[Note], tag: str) -> list[Note]:
 
 def find_by_exact_title(notes: list[Note], title: str) -> list[Note]:
     """Return notes whose title exactly matches the given title (case‑sensitive)."""
-    result: list[Note] = []
-    for note in notes:
-        if isinstance(note, Note) and note.title == title:
-            result.append(note)
-    return result
+    return [note for note in notes if note.title == title]
