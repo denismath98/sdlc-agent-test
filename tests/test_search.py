@@ -1,5 +1,5 @@
 from src.notebook.models import Note
-from src.notebook.search import filter_by_tag, search_notes
+from src.notebook.search import filter_by_tag, search_notes, find_by_exact_title
 
 
 def build_notes():
@@ -7,6 +7,8 @@ def build_notes():
         Note(id=1, title="Work plan", text="Prepare report", tags=["work"]),
         Note(id=2, title="Shopping", text="Buy milk", tags=["home"]),
         Note(id=3, title="Ideas", text="Project report draft", tags=["work", "draft"]),
+        Note(id=4, title="Title", text="Some content", tags=[]),
+        Note(id=5, title="title", text="Other content", tags=[]),
     ]
 
 
@@ -26,3 +28,19 @@ def test_filter_by_tag():
     result = filter_by_tag(build_notes(), "work")
     assert len(result) == 2
     assert [note.id for note in result] == [1, 3]
+
+
+def test_find_by_exact_title_match():
+    result = find_by_exact_title(build_notes(), "Title")
+    assert len(result) == 1
+    assert result[0].id == 4
+
+
+def test_find_by_exact_title_case_sensitive():
+    result = find_by_exact_title(build_notes(), "title")
+    assert len(result) == 1
+    assert result[0].id == 5
+
+    # Ensure that a different case does not match
+    result_mismatch = find_by_exact_title(build_notes(), "Title")
+    assert all(note.id != 5 for note in result_mismatch)
